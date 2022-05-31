@@ -6,10 +6,14 @@ namespace TicketTracking.Models
     {
         public void SetTicketItem(TicketDTO item)
         {
-            Id = item.Id;
+            //Id = item.Id ?? new Guid();
             Title = item.Title;
             Summary = item.Summary;
+            //StartDate = item.StartDate;
+            //EndDate = item.EndDate;
+            AssignUser = item.AssignUser;
             Description = item.Description;
+            Priority = item.Priority;
             TicketType = item.TicketType;
             Status = item.Status;
         }
@@ -18,8 +22,12 @@ namespace TicketTracking.Models
         public string Title { get; set; }
         public string Summary { get; set; }
         public string Description { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
         public TicketType TicketType { get; set; }
         public TicketStatus Status { get; set; }
+        public string AssignUser { get; set; }
+        public string Priority { get; set; }
         public string CreUser { get; set; }
         public DateTime CreDate { get; set; }
         public string UpdUser { get; set; }
@@ -28,10 +36,14 @@ namespace TicketTracking.Models
 
     public class TicketDTO
     {
-        public Guid Id { get; set; }
+        //public Guid? Id { get; set; }
         public string Title { get; set; }
         public string Summary { get; set; }
         public string Description { get; set; }
+        public string Priority { get; set; }
+        //public DateTime StartDate { get; set; }
+        //public DateTime EndDate { get; set; }
+        public string AssignUser { get; set; }
         public TicketType TicketType { get; set; }
         public TicketStatus Status { get; set; }
     }

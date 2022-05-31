@@ -38,7 +38,6 @@ namespace TicketTracking.Controllers
         /// <param name="message"></param>
         /// <returns></returns>
 
-        [PermissionAttribute(ActionType.Search)]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TicketItem>>> GetTicketItems()
         {
@@ -48,7 +47,7 @@ namespace TicketTracking.Controllers
         /// <summary>
         /// Deletes a specific TicketItem.
         /// </summary>
-        /// <param name="id">todo id</param>
+        /// <param name="id">ticket id</param>
         /// <returns></returns>
         [HttpGet("{id}")]
         [Produces("application/json")]
@@ -65,26 +64,24 @@ namespace TicketTracking.Controllers
             return item;
         }
 
+        /// <summary>
+        /// Update a TicketItem.
+        /// </summary>
+        /// <param name="id">a TicketDTO id</param>
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateTicketItem(Guid id, TicketDTO item)
+        [PermissionAttribute(ActionType.Update)]
+        public async Task<ActionResult<TicketItem>> UpdateTicketItem(Guid id, TicketDTO item)
         {
-            if (id != item.Id)
-            {
-                return BadRequest();
-            }
-
             var oItem = await _context.TicketItems.FindAsync(id);
             if (oItem == null)
             {
                 return NotFound();
             }
 
-            oItem.Id = item.Id;
             oItem.Title = item.Title;
             oItem.Summary = item.Summary;
             oItem.Description = item.Description;
             oItem.TicketType = item.TicketType;
-            oItem.Status = item.Status;
             oItem.UpdUser = "sys";
             oItem.UpdDate = DateTime.UtcNow;
 
@@ -97,44 +94,74 @@ namespace TicketTracking.Controllers
                 return NotFound();
             }
 
-            return NoContent();
+            return oItem;
+        }
+        /// <summary>
+        /// Complete a TicketItem.
+        /// </summary>
+        /// <param name="id">a TicketDTO id</param>
+        [HttpPut("complete/{id}")]
+        [PermissionAttribute("complete")]
+        public async Task<ActionResult<TicketItem>> UpdateStatus(Guid id)
+        {
+            var oItem = await _context.TicketItems.FindAsync(id);
+            if (oItem == null)
+            {
+                return NotFound();
+            }
+
+            oItem.Status = TicketStatus.Finish;
+            oItem.UpdUser = "sys";
+            oItem.UpdDate = DateTime.UtcNow;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException) when (!TicketItemExists(id))
+            {
+                return NotFound();
+            }
+
+            return oItem;
         }
         /// <summary>
         /// Creates a TicketItem.
         /// </summary>
-        /// <param name="item"></param>
+        /// <param name="item">a TicketDTO item</param>
         /// <returns>A newly created TicketItem</returns>
         /// <remarks>
         /// Sample request:
         ///
         ///     POST /Ticket
         ///     {
-        ///        "id": 1,
-        ///        "name": "Item #1",
-        ///        "isComplete": true
+        ///         "title": "string",
+        ///         "summary": "string",
+        ///         "description": "string",
+        ///         "ticketType": 1,
         ///     }
         ///
         /// </remarks>
         /// <response code="201">Returns the newly created item</response>
         /// <response code="400">If the item is null</response>
+        [PermissionAttribute(ActionType.Create)]
         [HttpPost]
         public async Task<ActionResult<TicketItem>> CreateTicketItem(TicketDTO item)
         {
+            this.HttpContext.Items["ResourceName"] = "";
             var oItem = new TicketItem();
             oItem.SetTicketItem(item);
             oItem.Id = Guid.NewGuid();
+            oItem.Status = TicketStatus.Open;
             oItem.CreUser = "sys";
             oItem.CreDate = DateTime.UtcNow;
             _context.TicketItems.Add(oItem);
             await _context.SaveChangesAsync();
 
             return oItem;
-            //return CreatedAtAction(
-            //    nameof(GetTicketItem),
-            //    new { id = item.Id },
-            //    item);
         }
 
+        [PermissionAttribute(ActionType.Delete)]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTicketItem(Guid id)
         {
@@ -154,19 +181,5 @@ namespace TicketTracking.Controllers
         private bool TicketItemExists(Guid id) =>
              _context.TicketItems.Any(e => e.Id == id);
 
-        //private static TicketItem ItemToDTO(TicketItem item) =>
-        //    new TicketItem
-        //    {
-        //        Id = item.Id,
-        //        Title = item.Title,
-        //        Summary = item.Summary,
-        //        Description = item.Description,
-        //        TicketType = item.TicketType,
-        //        Summary = item.Summary,
-        //        Summary = item.Summary,
-        //        Summary = item.Summary,
-        //        Summary = item.Summary,
-        //        Summary = item.Summary,
-        //    };
     }
 }

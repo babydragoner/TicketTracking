@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using TicketTracking.Models;
 
 namespace Portal.Filter
 {
@@ -38,25 +39,18 @@ namespace Portal.Filter
         public bool HadPrefix { get; set; }
 
         ILogger _Logger;
+        private readonly DBContext _context;
 
         //private Security.AuthenticationManager _authManager;
         #region constructor
-        public PermissionTypeAttribute(string actionName, string resourceName, bool hadPrefix)
+        public PermissionTypeAttribute(DBContext context, string actionName, string resourceName, bool hadPrefix)
         {
+            _context = context;
             ResourceName = resourceName;
             ActionName = actionName;
             HadPrefix = hadPrefix;
 
         }
-        //public PermissionTypeAttribute(Security.AuthenticationManager authManager, UserService srv, string actionName, string resourceName, bool hadPrefix, ILogger<PermissionTypeAttribute> Logger)
-        //{
-        //    _authManager = authManager;
-        //    _srv = srv;
-        //    ResourceName = resourceName;
-        //    ActionName = actionName;
-        //    HadPrefix = hadPrefix;
-        //    _Logger = Logger;
-        //}
         #endregion
 
         public void OnActionExecuted(ActionExecutedContext context)
@@ -76,47 +70,16 @@ namespace Portal.Filter
             }
             context.HttpContext.Items["ResourceName"] = ResourceName;
 
-            this.VaildToken(context);
+            var role = this.VaildToken(context);
 
-            //if (!string.IsNullOrEmpty(ResourceName) && !string.IsNullOrEmpty(ActionName))
-            //{
-            //    try
-            //    {
-            //        if (SecurityContextHolder.SecurityContext != null)
-            //        {
-            //            var actions = _srv.GetResourcePermission(SecurityContextHolder.SecurityContext.CurrentUser.UserAccount, ResourceName);
-            //            if (actions.Success)
-            //            {
-            //                var actionList = actions.Result as List<ResourcePermission>;
-            //                var actionData = actionList.Where(x => x.ResourceName == ResourceName && x.ActionName == ActionName && x.Enabled).FirstOrDefault();
-            //                if (actionData == null)
-            //                    throw new Exception("Access denied (1)");
-            //            }
-            //            else
-            //            {
-            //                throw new Exception("Access denied (2)");
-            //            }
-            //        }                    
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        _Logger.LogWarning("403, "+ex.Message +" : "+ ex.StackTrace);
-            //        var jsonResult = new
-            //        {
-            //            StatusCode = 403,
-            //            Status = ActionStatus.Fail.ToString(),
-            //            Message = ex.Message
-            //        };
-            //        BadRequestObjectResult forbid = new BadRequestObjectResult(jsonResult);
-            //        forbid.StatusCode = 403;
-            //        //forbid.
-            //        context.Result = forbid;
-            //    }
-            //}
-
+            var list = _context.RoleActionItems.Where(a => a.Role == role && a.Action == ActionName).ToList();
+            if(list.Count < 1)
+            {
+                this.Throw401(context, "Authencate failed");
+            }
         }
 
-        private void VaildToken(ActionExecutingContext context)
+        private TicketRole? VaildToken(ActionExecutingContext context)
         {
             string token = null;
 
@@ -134,6 +97,9 @@ namespace Portal.Filter
             {
                 if (token != null)
                 {
+                    var role = (TicketRole)Enum.Parse(typeof(TicketTracking.Models.TicketRole), token);
+                    context.HttpContext.Items["role"] = role;
+                    return role;
                 }
                 else
                 {
@@ -146,6 +112,7 @@ namespace Portal.Filter
                 _Logger.LogError(ex.Message + ", " + ex.StackTrace);
                 //throw ex;
             }
+            return null;
         }
 
         private void Throw401(ActionExecutingContext context, string message)
@@ -156,11 +123,6 @@ namespace Portal.Filter
                 Status = ActionStatus.Fail.ToString(),
                 Message = message
             };
-            //UnauthorizedObjectResult unauthorizedObjectResult = new UnauthorizedObjectResult(jsonResult);
-            //unauthorizedObjectResult.StatusCode = 401;
-
-            ////filterContext.Result = unauthorizedObjectResult;
-
 
             BadRequestObjectResult forbid = new BadRequestObjectResult(jsonResult);
             forbid.StatusCode = 401;

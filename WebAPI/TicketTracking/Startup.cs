@@ -68,15 +68,23 @@ namespace TicketTracking
 
 
             services.AddSingleton<CacheHelper>();
+
+            services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
+            {
+                builder.AllowAnyOrigin()
+                       .AllowAnyMethod()
+                       .AllowAnyHeader();
+            }));
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, DBContext context)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "TodoApi v1"));
+                context.init();
             }
 
             //this._logger = logger;
@@ -118,6 +126,7 @@ namespace TicketTracking
             //        await context.Response.WriteAsync(JsonContent.SerializeObject(res));
             //    });
             //});
+            app.UseCors("MyPolicy");
 
             app.UseHttpsRedirection();
             app.UseRouting();
