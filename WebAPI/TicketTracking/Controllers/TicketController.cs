@@ -110,6 +110,16 @@ namespace TicketTracking.Controllers
                 return NotFound();
             }
 
+            var role = (TicketRole)this.HttpContext.Items["role"];
+            if (oItem.TicketType == TicketType.New && role == TicketRole.QA)
+            {
+                throw new Exception("can't update this type.");
+            }
+
+            if (oItem.TicketType != TicketType.New && role == TicketRole.PM)
+            {
+                throw new Exception("can't update this type.");
+            }
             oItem.Status = TicketStatus.Finish;
             oItem.UpdUser = "sys";
             oItem.UpdDate = DateTime.UtcNow;
@@ -155,6 +165,17 @@ namespace TicketTracking.Controllers
             oItem.Status = TicketStatus.Open;
             oItem.CreUser = "sys";
             oItem.CreDate = DateTime.UtcNow;
+
+            var role = (TicketRole)this.HttpContext.Items["role"];
+            if (oItem.TicketType == TicketType.New && role == TicketRole.QA)
+            {
+                throw new Exception("can't create this type.");
+            }
+
+            if (oItem.TicketType != TicketType.New && role == TicketRole.PM)
+            {
+                throw new Exception("can't create this type.");
+            }
             _context.TicketItems.Add(oItem);
             await _context.SaveChangesAsync();
 
