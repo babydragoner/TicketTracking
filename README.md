@@ -1,5 +1,8 @@
 # TicketTracking
  TicketTracking
+
+### Overview 
+
 Phase I
 	1.只有 QA 可以創建錯誤、編輯錯誤和刪除錯誤，錯誤需要摘要字段和描述字段。
 	2.只有 RD 可以解決錯誤。
