@@ -12,3 +12,4 @@
 ### Other
 - 工單類型:錯誤, 功能請求, 測試用例 三種
 - 用戶類型:QA, RD, PM, Admin 四種
+- API 文件使用 swagger 會自動解析 XML 註解
