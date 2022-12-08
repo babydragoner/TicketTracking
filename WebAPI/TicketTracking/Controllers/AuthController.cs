@@ -46,12 +46,19 @@ namespace TicketTracking.Controllers
         /// <response code="201">Returns the newly created item</response>
         /// <response code="400">If the item is null</response>
         [HttpPost]
-        public async Task<ActionResult<TicketItem>> Login(TicketDTO item)
+        public async Task<object> Login(LoginDTO data)
         {
             var oItem = new TicketItem();
-            oItem.Id = Guid.NewGuid();
+            oItem.Token = Guid.NewGuid().ToString();
             _cache.SetStrCache("sys", oItem.Id.ToString());
-            return oItem;
+            var res = new { userId = data.username, token = "fakeToken1", role = "" };
+            return new
+            {
+                code = 0,
+                result= res,
+                message = "",
+                type = "success",
+            };
             //return CreatedAtAction(
             //    nameof(GetTicketItem),
             //    new { id = item.Id },

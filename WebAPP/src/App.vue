@@ -2,7 +2,7 @@
 <template>
   <div>    
       <nav>
-        <RouterLink to="/Ticket">Home</RouterLink>
+        <RouterLink to="/Ticket">問題追蹤系統</RouterLink>
       </nav>
   </div>
   <div>

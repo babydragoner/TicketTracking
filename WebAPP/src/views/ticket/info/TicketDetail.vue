@@ -4,15 +4,17 @@
     <h2 class="green">{{ msg }}</h2>
     <Button type="primary" v-show="userRole != 2" @click="handleSave" style="margin-left: 10px"
       >儲存</Button>
-    <Button type="primary" v-show="userRole == 2" @click="handleComplete" style="margin-left: 10px"
+    <Button type="primary" v-show="userRole == 2 || userRole == 4" @click="handleComplete" style="margin-left: 10px"
       >完成</Button>
+    <Button type="primary" @click="handleReturn" style="margin-left: 10px"
+      >返回主頁面</Button>
   </div>
 
   <Card style="background: #eee">
     <Form>
         <Row>
           <Col :span="3">
-            <Form.Item label="* 角色" labelAlign="left" />
+            <Form.Item label="* 模擬的角色" labelAlign="left" />
           </Col>
           <Col :span="21">
             <Form.Item>
@@ -72,7 +74,7 @@
           </Col>
           <Col :span="12">
             <Form.Item label="狀態" labelAlign="left" :labelCol="queryFormItemStyle2">
-              <Select v-model:value="ticket.status" :options="state.StatusList">           
+              <Select v-model:value="ticket.status" :disabled="true" :options="state.StatusList">           
               </Select>
             </Form.Item>
           </Col>
@@ -82,9 +84,9 @@
 </template>
 
 <script setup lang="ts">
-import { apiHelper } from '@/services/apiHelper';
-import { onMounted, reactive, ref } from "vue";
-import { useTodoStore } from '@/store';
+  import { apiHelper } from '@/services/apiHelper';
+  import { onMounted, reactive, ref } from "vue";
+  import { useTodoStore } from '@/store';
   import {
     Row,
     Col,
@@ -99,14 +101,13 @@ import { useTodoStore } from '@/store';
     Table,
   } from 'ant-design-vue';
   import 'ant-design-vue/dist/antd.css';
-import { defHttp } from '../../../services/apiHelper';
-import router from '../../../router';
-import { useRoute } from 'vue-router';
-import { TicketItem } from '/@/models/ticketModel';
-// import { TicketItem } from '../../../models/ticketModel';
+  import { defHttp } from '../../../services/apiHelper';
+  import router from '../../../router';
+  import { useRoute } from 'vue-router';
+  import { TicketItem } from '/@/models/ticketModel';
 
   const ticket = reactive({} as TicketItem);
-  const msg = ref('test');
+  const msg = ref('問題(編輯/新增)頁面');
   const route = useRoute();
   const id = ref(route.params?.id as string);
   const userRole = ref('');
@@ -132,11 +133,17 @@ import { TicketItem } from '/@/models/ticketModel';
     // msg.value = 'ttt';
     console.log(id.value)
     if(id.value == 'new'){
-    ticket.title = 'test';
-    ticket.summary = 'test2';
-    ticket.description = 'test3';
-    ticket.ticketType = 1;
-    ticket.status = 1;
+      ticket.title = 'test';
+      ticket.summary = 'test2';
+      ticket.description = 'test3';
+      ticket.ticketType = 1;
+      ticket.status = 1;
+
+      state.value.RoleList =  [
+          { value: 1, label: 'QA' },
+          { value: 3, label: 'PM' },
+          { value: 4, label: 'Admin' },
+        ];
 
     }else{
       await queryTicketById(id.value);
@@ -193,7 +200,7 @@ import { TicketItem } from '/@/models/ticketModel';
     defHttp.setToken(userRole.value);
     try {
       if(id.value == 'new'){
-        msg.value = 'can not complete.';
+        msg.value = 'can not to be complete.';
       }else{
         let res = await defHttp.put<any>( { url :`Ticket/complete/${id.value}` });
         console.log(res);
@@ -203,8 +210,8 @@ import { TicketItem } from '/@/models/ticketModel';
       msg.value = `had error.(${err.message})`;
     }
   };
-  const handleDetail = async (id: string) => {
-    router.push(`/ticket/${id}`);    
+  const handleReturn = async () => {
+    router.push(`/ticket`);    
   };
 </script>
 

@@ -19,6 +19,7 @@ namespace TicketTracking.Models
         }
 
         public Guid Id { get; set; }
+        public string Token { get; set; }
         public string Title { get; set; }
         public string Summary { get; set; }
         public string Description { get; set; }
@@ -48,6 +49,11 @@ namespace TicketTracking.Models
         public TicketStatus Status { get; set; }
     }
 
+    public class LoginDTO
+    {
+        public string username { get; set; }
+        public string password { get; set; }
+    }
     public enum TicketStatus
     {
         // 建立 Ticket

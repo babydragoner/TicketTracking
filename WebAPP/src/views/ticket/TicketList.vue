@@ -34,10 +34,10 @@
 </template>
 
 <script setup lang="ts">
-import { apiHelper } from '@/services/apiHelper';
-import { TicketItem } from '@/models/ticketModel';
-import { onMounted, reactive, ref } from "vue";
-import { useTodoStore } from '@/store';
+  import { apiHelper } from '@/services/apiHelper';
+  import { TicketItem } from '@/models/ticketModel';
+  import { onMounted, reactive, ref } from "vue";
+  import { useTodoStore } from '@/store';
   import {
     Row,
     Col,
@@ -52,8 +52,8 @@ import { useTodoStore } from '@/store';
     Table,
   } from 'ant-design-vue';
   import 'ant-design-vue/dist/antd.css';
-import { defHttp } from '../../services/apiHelper';
-import router from '../../router';
+  import { defHttp } from '../../services/apiHelper';
+  import router from '../../router';
 
   const idLoading = ref(false);
   const ticketsCampaigns = reactive([] as Array<TicketItem>);

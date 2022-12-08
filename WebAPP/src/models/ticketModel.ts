@@ -2,6 +2,9 @@
 export interface TicketItem {
     id: string;
     name: string;
+    title: string;
+    summary: string;
+    description: string;
     ticketType: number;
     startDate: string;
     endDate: string;
